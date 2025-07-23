@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef } from "react";
+import React from "react";
 import SlideComponent from "./SlideComponent";
 import SlideConfig from "./SlideConfig";
 import { useSlideStore } from "@/app/_store/SlideStore";
@@ -28,6 +28,7 @@ export default function SlideContainer() {
         username: user.username,
       }),
     });
+
     const data = await res.json();
     setDisplayMultiplier(data.randomMultiplier);
   };
@@ -35,10 +36,7 @@ export default function SlideContainer() {
   const handleFinish = (random: number, isWin: boolean) => {
     if (!user || !token) return;
     fetchUser(token);
-    setRecentWins([
-      ...recentWins,
-      { isWin, randomNumber: random },
-    ]);
+    setRecentWins([...recentWins, { isWin, randomNumber: random }]);
   };
 
   return (

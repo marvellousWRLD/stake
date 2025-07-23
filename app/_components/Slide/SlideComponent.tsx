@@ -11,7 +11,7 @@ export default function SlideComponent({ onFinish }: SlideComponentProps) {
     isRolling,
     setIsRolling,
     displayMultiplier,
-    recentWins,    // (no longer used to record new wins here)
+    recentWins,
     multiplier: targetMultiplier,
   } = useSlideStore();
 
@@ -22,45 +22,35 @@ export default function SlideComponent({ onFinish }: SlideComponentProps) {
 
     if (isRolling) {
       setAnimatedMultiplier(0);
-
-      const animationSpeed = 100;
-      const incrementAmount = 0.1;
-      const minDuration = 1000;
-      const startTime = Date.now();
+      const speed = 100;
+      const increment = 0.1;
+      const duration = 1000;
+      const start = Date.now();
 
       intervalId = setInterval(() => {
-        const elapsedTime = Date.now() - startTime;
-        const progress = Math.min(elapsedTime / minDuration, 1);
-        const easedProgress = progress < 1 ? progress ** 2 : 1;
-        const nextMultiplier = easedProgress * displayMultiplier;
+        const elapsed = Date.now() - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = progress < 1 ? progress ** 2 : 1;
+        const next = eased * displayMultiplier;
 
-        // once we've essentially reached the target…
-        if (
-          progress >= 1 &&
-          nextMultiplier >= displayMultiplier - incrementAmount
-        ) {
+        if (progress >= 1 && next >= displayMultiplier - increment) {
           clearInterval(intervalId);
           setAnimatedMultiplier(displayMultiplier);
           setIsRolling(false);
 
-          // fire our “finished” callback
           const didWin = displayMultiplier >= targetMultiplier;
           onFinish?.(displayMultiplier, didWin);
         } else {
-          setAnimatedMultiplier(nextMultiplier);
+          setAnimatedMultiplier(next);
         }
-      }, animationSpeed);
+      }, speed);
     }
 
     return () => clearInterval(intervalId);
   }, [isRolling, displayMultiplier, setIsRolling, onFinish, targetMultiplier]);
 
-  const formatted = (isRolling
-    ? animatedMultiplier
-    : displayMultiplier
-  ).toFixed(2);
+  const formatted = (isRolling ? animatedMultiplier : displayMultiplier).toFixed(2);
 
-  // once isRolling==false, color green if >= targetMultiplier
   const resultColor =
     !isRolling && displayMultiplier >= targetMultiplier
       ? "text-success"
@@ -73,30 +63,23 @@ export default function SlideComponent({ onFinish }: SlideComponentProps) {
           <div key={i} className="flex-shrink-0">
             <div
               className={`w-8 h-4 px-6 py-4 rounded-full flex items-center justify-center ${
-                item.isWin
-                  ? "bg-success text-black"
-                  : "bg-neutral-700 text-white"
+                item.isWin ? "bg-success text-black" : "bg-neutral-700 text-white"
               }`}
             >
-              <span className="text-xs font-bold">
-                {item.randomNumber.toFixed(2)}
-              </span>
+              <span className="text-xs font-bold">{item.randomNumber.toFixed(2)}</span>
             </div>
           </div>
         ))}
       </div>
-      <div className="flex-1 w-full flex items-center justify-center">
-      <span
-  className={`
-    font-bold
-    text-7xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl
-    transition-all duration-300
-    ${isRolling ? "animate-pulse text-white" : resultColor}
-  `}
->
-  {formatted}X
-</span>
 
+      <div className="flex-1 w-full flex items-center justify-center">
+        <span
+          className={`font-bold text-7xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl transition-all duration-300 ${
+            isRolling ? "animate-pulse text-white" : resultColor
+          }`}
+        >
+          {formatted}X
+        </span>
       </div>
     </div>
   );
